@@ -1,4 +1,5 @@
 .venv
+venv
 __pycache__
 dist
 build
@@ -7,4 +8,10 @@ build
 .pytest_cache
 .env
 .coverage
+coverage.xml
 htmlcov/
+reports/*
+!reports/.gitkeep
+allure-results/
+allure-report/
+*.log

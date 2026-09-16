@@ -1,0 +1,9 @@
+{
+  "keyword_exits": ["bye", "Bye", "BYE", "Goodbye", "ok bye now"],
+  "model_detected_exits": ["see you later", "good night", "catch you later"],
+  "non_exits": [
+    "what is the humidity?",
+    "will it rain tomorrow?",
+    "nearby forecast"
+  ]
+}

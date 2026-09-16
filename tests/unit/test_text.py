@@ -6,6 +6,7 @@ import pytest
 
 from lib.text import display
 from lib.text import format as format_reply
+from tests.support.assertions import assert_no_think_tags
 
 
 pytestmark = pytest.mark.unit
@@ -25,7 +26,7 @@ class TestFormatReply:
         result = format_reply(raw)
 
         assert result == "It will rain later."
-        assert "<think>" not in result
+        assert_no_think_tags(result)
 
     def test_strips_multiline_think_block(self):
         raw = "<think>\nstep 1\nstep 2\n</think>\nTake an umbrella."
@@ -35,17 +36,29 @@ class TestFormatReply:
         assert result == "Take an umbrella."
 
     @pytest.mark.parametrize(
-        "raw",
+        "raw, expected",
         [
-            "Hello <think>hidden</think> world",
-            "<think>only</think>",
+            ("Hello <think>hidden</think> world", "Hello world"),
+            ("<think>only</think>", ""),
+            ("<think>a</think>\n<think>b</think>\nDone.", "Done."),
         ],
     )
-    def test_never_leaks_think_tags(self, raw: str):
+    def test_never_leaks_think_tags(self, raw: str, expected: str):
         result = format_reply(raw)
 
-        assert "<think>" not in result
-        assert "</think>" not in result
+        assert_no_think_tags(result)
+        assert result == expected
+
+    def test_leaves_unclosed_think_block_in_place(self):
+        raw = "<think>still reasoning\nCarry a coat."
+
+        result = format_reply(raw)
+
+        assert result == raw
+        assert "<think>" in result
+
+    def test_empty_string_is_unchanged(self):
+        assert format_reply("") == ""
 
 
 class TestDisplay:
@@ -64,3 +77,10 @@ class TestDisplay:
 
         assert captured.endswith("\n\n") is False
         assert "You: " in captured
+
+    def test_default_end_adds_blank_line(self, capsys):
+        display("AI: ", "OK")
+
+        captured = capsys.readouterr().out
+
+        assert captured.endswith("\n\n")

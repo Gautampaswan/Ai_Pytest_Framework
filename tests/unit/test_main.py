@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import pytest
 
+from tests.support.assertions import assert_farewell_printed, assert_prompts_equal
 from tests.support.harness import WeatherAgentHarness
+from tests.support.testdata import load_json
 
 
 pytestmark = pytest.mark.unit
+
+FAREWELL = load_json("farewell_cases.json")
 
 
 class TestMainLocation:
@@ -21,6 +25,19 @@ class TestMainLocation:
 
         assert result.locations == ["Delhi"]
 
+    @pytest.mark.parametrize(
+        "raw, expected",
+        [
+            ("mumbai", "Mumbai"),
+            ("NEW YORK", "New york"),
+            ("lOnDoN", "London"),
+        ],
+    )
+    def test_str_capitalize_contract(self, agent_harness: WeatherAgentHarness, raw, expected):
+        result = agent_harness.run([raw, "bye"])
+
+        assert result.locations == [expected]
+
 
 class TestMainConversation:
     def test_analyze_receives_weather_payload_and_user_prompt(
@@ -28,21 +45,18 @@ class TestMainConversation:
     ):
         result = agent_harness.run(["Dhaka", "What is the temperature?", "bye"])
 
-        assert result.prompts == ["What is the temperature?"]
+        assert_prompts_equal(result.prompts, ["What is the temperature?"])
         assert result.analyze_calls[0][0] == weather_payload
         assert "It is 25C and cloudy." in result.stdout
 
-    def test_keyword_bye_exits_without_calling_analyze(self, agent_harness: WeatherAgentHarness):
-        result = agent_harness.run(["Dhaka", "bye"])
+    @pytest.mark.parametrize("farewell", FAREWELL["keyword_exits"])
+    def test_keyword_bye_exits_without_calling_analyze(
+        self, agent_harness: WeatherAgentHarness, farewell: str
+    ):
+        result = agent_harness.run(["Dhaka", farewell])
 
         assert result.prompts == []
-        assert "Bye. Have a nice day." in result.stdout
-
-    def test_goodbye_exits_via_bye_substring(self, agent_harness: WeatherAgentHarness):
-        result = agent_harness.run(["Dhaka", "Goodbye"])
-
-        assert result.prompts == []
-        assert "Bye. Have a nice day." in result.stdout
+        assert_farewell_printed(result.stdout)
 
     def test_model_detected_farewell_exits_without_bye_keyword(
         self, monkeypatch, capsys, weather_payload
@@ -57,7 +71,15 @@ class TestMainConversation:
         result = harness.run(["Dhaka", "see you later"])
 
         assert result.prompts == []
-        assert "Bye. Have a nice day." in result.stdout
+        assert_farewell_printed(result.stdout)
+
+    def test_weather_question_is_not_treated_as_exit(
+        self, agent_harness: WeatherAgentHarness
+    ):
+        result = agent_harness.run(["Dhaka", "what is the humidity?", "bye"])
+
+        assert result.prompts == ["what is the humidity?"]
+        assert_farewell_printed(result.stdout)
 
     def test_multi_turn_then_exit(self, agent_harness: WeatherAgentHarness):
         result = agent_harness.run(
@@ -82,3 +104,10 @@ class TestMainConversation:
 
         assert "Carry an umbrella." in result.stdout
         assert "<think>" not in result.stdout
+
+    @pytest.mark.negative
+    def test_raises_when_conversation_inputs_are_exhausted(
+        self, agent_harness: WeatherAgentHarness
+    ):
+        with pytest.raises(AssertionError, match="more input than the test provided"):
+            agent_harness.run(["Dhaka"])

@@ -1,0 +1,36 @@
+name: Pytest
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  unit-and-e2e:
+    name: Offline suite (unit / integration / e2e)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: Run pytest
+        env:
+          MODEL: llama3.2
+        run: pytest -m "not live" --cov-report=xml --junitxml=reports/junit.xml
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-html-report
+          path: reports/
+          if-no-files-found: ignore

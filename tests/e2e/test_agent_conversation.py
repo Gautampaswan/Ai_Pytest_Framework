@@ -4,36 +4,29 @@ from __future__ import annotations
 
 import pytest
 
+from tests.support.assertions import assert_farewell_printed
 from tests.support.harness import WeatherAgentHarness
+from tests.support.testdata import load_yaml
 
 
 pytestmark = pytest.mark.e2e
 
 
-SCENARIOS = [
-    pytest.param(
-        ["", "What's the temperature?", "bye"],
-        "Dhaka",
-        ["What's the temperature?"],
-        id="default-city-then-temperature",
-    ),
-    pytest.param(
-        ["mumbai", "Will it rain today?", "bye"],
-        "Mumbai",
-        ["Will it rain today?"],
-        id="named-city-rain-question",
-    ),
-    pytest.param(
-        ["Delhi", "humidity?", "wind speed?", "bye"],
-        "Delhi",
-        ["humidity?", "wind speed?"],
-        id="multi-turn-follow-up",
-    ),
-]
+def _conversation_params():
+    scenarios = load_yaml("conversation_scenarios.yaml")["scenarios"]
+    return [
+        pytest.param(
+            case["inputs"],
+            case["expected_city"],
+            case["expected_prompts"],
+            id=case["id"],
+        )
+        for case in scenarios
+    ]
 
 
 class TestAgentConversation:
-    @pytest.mark.parametrize("inputs, expected_city, expected_prompts", SCENARIOS)
+    @pytest.mark.parametrize("inputs, expected_city, expected_prompts", _conversation_params())
     def test_conversation_uses_one_weather_snapshot(
         self,
         agent_harness: WeatherAgentHarness,
@@ -46,8 +39,11 @@ class TestAgentConversation:
 
         assert result.locations == [expected_city]
         assert result.prompts == expected_prompts
-        assert all(call[0] is weather_payload or call[0] == weather_payload for call in result.analyze_calls)
-        assert "Bye. Have a nice day." in result.stdout
+        assert all(
+            call[0] is weather_payload or call[0] == weather_payload
+            for call in result.analyze_calls
+        )
+        assert_farewell_printed(result.stdout)
 
     def test_reply_is_grounded_in_injected_weather(
         self, monkeypatch, capsys, weather_payload

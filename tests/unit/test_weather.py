@@ -6,6 +6,7 @@ import pytest
 import python_weather
 
 from lib.weather import getweather
+from tests.support.assertions import assert_weather_schema
 from tests.support.factories import WEATHER_SCHEMA_KEYS, make_forecast
 from tests.support.fakes import make_async_weather_client
 
@@ -21,6 +22,7 @@ class TestGetWeatherSuccess:
 
         result = await getweather("Dhaka")
 
+        assert_weather_schema(result)
         assert WEATHER_SCHEMA_KEYS <= result.keys()
         assert result["location"] == "Dhaka"
         assert result["country"] == "Bangladesh"
@@ -29,15 +31,26 @@ class TestGetWeatherSuccess:
         client.get.assert_awaited_once_with("Dhaka")
 
     @pytest.mark.asyncio
-    async def test_converts_fahrenheit_temperature_to_celsius(self, monkeypatch):
-        forecast = make_forecast(temperature=77, feels_like=86)
+    @pytest.mark.parametrize(
+        ("fahrenheit", "feels_like_f", "celsius", "feels_like_c"),
+        [
+            (77, 86, 25, 30),
+            (32, 32, 0, 0),
+            (212, 212, 100, 100),
+            (78, 78, 26, 26),
+        ],
+    )
+    async def test_converts_fahrenheit_to_celsius(
+        self, monkeypatch, fahrenheit, feels_like_f, celsius, feels_like_c
+    ):
+        forecast = make_forecast(temperature=fahrenheit, feels_like=feels_like_f)
         client = make_async_weather_client(forecast)
         monkeypatch.setattr("lib.weather.python_weather.Client", lambda *a, **k: client)
 
         result = await getweather("Dhaka")
 
-        assert result["temperature"] == 25
-        assert result["feels_like"] == 30
+        assert result["temperature"] == celsius
+        assert result["feels_like"] == feels_like_c
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -73,9 +86,21 @@ class TestGetWeatherSuccess:
 
         assert seen.get("unit") == python_weather.IMPERIAL
 
+    @pytest.mark.asyncio
+    async def test_datetime_is_minute_precision_iso(self, monkeypatch):
+        forecast = make_forecast()
+        client = make_async_weather_client(forecast)
+        monkeypatch.setattr("lib.weather.python_weather.Client", lambda *a, **k: client)
+
+        result = await getweather("Dhaka")
+
+        assert result["datetime"] == "2026-09-16T12:30"
+        assert "seconds" not in result["datetime"]
+
 
 class TestGetWeatherFailures:
     @pytest.mark.asyncio
+    @pytest.mark.negative
     async def test_weather_api_error_exits_process(self, monkeypatch):
         client = make_async_weather_client(make_forecast())
 
@@ -89,6 +114,7 @@ class TestGetWeatherFailures:
             await getweather("Nowhere")
 
     @pytest.mark.asyncio
+    @pytest.mark.negative
     async def test_unexpected_error_exits_process(self, monkeypatch):
         client = make_async_weather_client(make_forecast())
 

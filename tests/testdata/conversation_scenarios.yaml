@@ -1,0 +1,40 @@
+# Data-driven CLI conversations for e2e tests.
+# inputs: location, zero or more prompts, then a farewell that must terminate the loop.
+scenarios:
+  - id: default-city-then-temperature
+    inputs:
+      - ""
+      - "What's the temperature?"
+      - "bye"
+    expected_city: Dhaka
+    expected_prompts:
+      - "What's the temperature?"
+
+  - id: named-city-rain-question
+    inputs:
+      - "mumbai"
+      - "Will it rain today?"
+      - "bye"
+    expected_city: Mumbai
+    expected_prompts:
+      - "Will it rain today?"
+
+  - id: multi-turn-follow-up
+    inputs:
+      - "Delhi"
+      - "humidity?"
+      - "wind speed?"
+      - "bye"
+    expected_city: Delhi
+    expected_prompts:
+      - "humidity?"
+      - "wind speed?"
+
+  - id: mixed-case-city-activity-advice
+    inputs:
+      - "lOnDoN"
+      - "Should I take an umbrella?"
+      - "bye"
+    expected_city: London
+    expected_prompts:
+      - "Should I take an umbrella?"

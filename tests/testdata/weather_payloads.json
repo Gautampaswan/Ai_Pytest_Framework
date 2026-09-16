@@ -1,0 +1,40 @@
+{
+  "dhaka_partly_cloudy": {
+    "coordinates": {"X": 23.8103, "Y": 90.4125},
+    "country": "Bangladesh",
+    "datetime": "2026-09-16T12:30",
+    "description": "Partly cloudy",
+    "feels_like": 30,
+    "humidity": 70,
+    "kind": "CLOUDY",
+    "local_population": 8906039,
+    "location": "Dhaka",
+    "precipitation": 0.0,
+    "pressure": 1012,
+    "region": "Dhaka Division",
+    "temperature": 25,
+    "ultraviolet": "MODERATE",
+    "visibility": 10,
+    "wind_direction": "N",
+    "wind_speed": 8
+  },
+  "london_rain": {
+    "coordinates": {"X": 51.5074, "Y": -0.1278},
+    "country": "United Kingdom",
+    "datetime": "2026-09-16T09:00",
+    "description": "Light rain",
+    "feels_like": 12,
+    "humidity": 88,
+    "kind": "RAIN",
+    "local_population": 8982000,
+    "location": "London",
+    "precipitation": 2.4,
+    "pressure": 1008,
+    "region": "England",
+    "temperature": 14,
+    "ultraviolet": "LOW",
+    "visibility": 6,
+    "wind_direction": "SW",
+    "wind_speed": 18
+  }
+}

@@ -11,15 +11,16 @@ import pytest
 
 import lib.ai as ai_mod
 from lib.weather import getweather
+from tests.config.settings import settings
+from tests.support.assertions import assert_weather_schema
 from tests.support.factories import WEATHER_SCHEMA_KEYS
-
-
-OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
 
 
 def _ollama_up() -> bool:
     try:
-        response = httpx.get(OLLAMA_TAGS_URL, timeout=2.0)
+        response = httpx.get(
+            settings.OLLAMA_TAGS_URL, timeout=settings.OLLAMA_HEALTH_TIMEOUT_S
+        )
         return response.status_code == 200
     except httpx.HTTPError:
         return False
@@ -31,7 +32,9 @@ pytestmark = pytest.mark.live
 @pytest.mark.skipif(not _ollama_up(), reason="Ollama is not running on localhost:11434")
 class TestLiveOllama:
     def test_model_is_installed(self):
-        models = httpx.get(OLLAMA_TAGS_URL, timeout=5.0).json().get("models", [])
+        models = httpx.get(
+            settings.OLLAMA_TAGS_URL, timeout=settings.LIVE_REQUEST_TIMEOUT_S
+        ).json().get("models", [])
         names = {item.get("name", "") for item in models}
 
         assert any(ai_mod.MODEL in name for name in names), f"{ai_mod.MODEL} is not pulled in Ollama"
@@ -58,5 +61,5 @@ async def test_live_weather_fetch_for_dhaka():
         pytest.skip("Weather provider is unavailable")
 
     assert WEATHER_SCHEMA_KEYS <= result.keys()
-    assert isinstance(result["temperature"], int)
+    assert_weather_schema(result)
     assert result["location"]
