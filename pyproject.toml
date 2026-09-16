@@ -14,3 +14,19 @@ dependencies = [
     "smartfunc>=0.2.0",
     "termcolor>=3.0.1",
 ]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+]
+
+[tool.coverage.run]
+source = ["lib", "main"]
+branch = true
+omit = ["tests/*", "setup.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

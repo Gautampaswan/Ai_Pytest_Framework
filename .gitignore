@@ -6,3 +6,5 @@ build
 *.exe
 .pytest_cache
 .env
+.coverage
+htmlcov/
