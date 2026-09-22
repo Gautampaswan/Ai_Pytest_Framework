@@ -132,3 +132,19 @@ class TestByePrompting:
         ai_mod.bye("humidity?")
 
         assert captured["model"] == ai_mod.MODEL
+
+
+class TestExtractLocationPrompting:
+    def test_asks_model_to_return_city_or_none(self, monkeypatch):
+        captured: dict = {}
+        monkeypatch.setattr(
+            ai_mod.client.chat.completions,
+            "create",
+            fake_completion_factory("Mumbai", captured),
+        )
+
+        result = ai_mod.extract_location("What is the humidity in Mumbai?")
+
+        assert result == "Mumbai"
+        assert "Mumbai" in captured["messages"][-1]["content"]
+        assert "NONE" in captured["messages"][-1]["content"]

@@ -14,6 +14,9 @@ class TestSettings:
     DEFAULT_LOCATION: str = "Dhaka"
     FAREWELL_MESSAGE: str = "Bye. Have a nice day."
 
+    DEEPEVAL_THRESHOLD: float = 0.5
+    DEEPEVAL_STRICT_THRESHOLD: float = 1.0
+
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_TAGS_URL: str = f"{OLLAMA_BASE_URL}/api/tags"
     OLLAMA_HEALTH_TIMEOUT_S: float = 2.0

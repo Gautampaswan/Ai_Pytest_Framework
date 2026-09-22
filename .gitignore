@@ -12,6 +12,8 @@ coverage.xml
 htmlcov/
 reports/*
 !reports/.gitkeep
+.deepeval/
+.deepeval-cache/
 allure-results/
 allure-report/
 *.log

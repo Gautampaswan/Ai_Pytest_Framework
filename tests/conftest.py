@@ -10,6 +10,9 @@ from pathlib import Path
 
 import pytest
 
+os.environ.setdefault("DEEPEVAL_TELEMETRY_OPT_OUT", "1")
+os.environ.setdefault("DEEPEVAL_DISABLE_DOTENV", "1")
+
 from tests.config.settings import settings
 from tests.support.factories import make_forecast, make_weather_payload
 from tests.support.harness import WeatherAgentHarness
@@ -54,6 +57,11 @@ def conversation_scenarios() -> list[dict]:
 @pytest.fixture
 def farewell_cases() -> dict:
     return load_json("farewell_cases.json")
+
+
+@pytest.fixture
+def deepeval_cases() -> list[dict]:
+    return load_yaml("deepeval_cases.yaml")["cases"]
 
 
 def pytest_configure(config: pytest.Config) -> None:

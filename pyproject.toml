@@ -24,6 +24,8 @@ test = [
     "pytest-timeout>=2.3.1",
     "PyYAML>=6.0.2",
     "httpx>=0.28.1",
+    "deepeval>=4.2.3,<5",
+    "ollama>=0.4.8",
 ]
 
 [tool.coverage.run]

@@ -38,6 +38,17 @@ def bye(text: str):
     )
 
 
+@llm_backend
+def extract_location(text: str):
+    return (
+        "Extract the city or location name from the text. "
+        "If a location is present, return only the location name. "
+        "If no location is present, return NONE. "
+        "JUST RETURN THE LOCATION OR NONE, NOT ANYTHING ELSE.\n"
+        f"Text: {text}"
+    )
+
+
     
 def isBye(text: str) -> bool:
     response: str = bye(text)

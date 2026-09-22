@@ -1,0 +1,34 @@
+# DeepEval goldens for weather-agent replies.
+# payload keys map to tests/testdata/weather_payloads.json.
+cases:
+  - id: dhaka-temperature-grounded
+    prompt: "What is the temperature?"
+    payload: dhaka_partly_cloudy
+    actual_output: "It is 25C and partly cloudy in Dhaka."
+    expected_output: "Dhaka is 25C and partly cloudy."
+    extra_mentions:
+      - "partly cloudy"
+    should_pass: true
+
+  - id: london-umbrella-grounded
+    prompt: "Should I take an umbrella?"
+    payload: london_rain
+    actual_output: "Yes. London has light rain at 14C, so take an umbrella."
+    extra_mentions:
+      - "rain"
+    should_pass: true
+
+  - id: hallucinated-city-and-temperature
+    prompt: "What is the temperature?"
+    payload: dhaka_partly_cloudy
+    actual_output: "It is 40C and sunny in Paris."
+    should_pass: false
+
+  - id: markdown-style-violation
+    prompt: "Give me a short summary."
+    payload: dhaka_partly_cloudy
+    actual_output: "**Dhaka** is `25C` and [cloudy](https://example.com)."
+    extra_mentions:
+      - "25"
+    style_should_pass: false
+    should_pass: true

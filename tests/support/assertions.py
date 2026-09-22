@@ -28,3 +28,10 @@ def assert_no_think_tags(text: str) -> None:
 
 def assert_prompts_equal(actual: Iterable[str], expected: Iterable[str]) -> None:
     assert list(actual) == list(expected)
+
+
+def assert_deepeval(test_case, metrics) -> None:
+    """Run DeepEval assert_test without spinning an extra event loop."""
+    from deepeval import assert_test
+
+    assert_test(test_case, metrics, run_async=False)
